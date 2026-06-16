@@ -13,4 +13,4 @@ class User(Base): # SQLAlchemy model for the "users" table
     name: Mapped[str] = mapped_column(String) # Name column for the "users" table
     email: Mapped[str] = mapped_column(String) # Email column for the "users" table
 
-
+Base.metadata.create_all(engine) # Create the "users" table in the database 

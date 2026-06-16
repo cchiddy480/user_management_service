@@ -1,6 +1,22 @@
 import json
 import websockets
 
+def build_response(payload):
+    operation = payload.get("operation")
+
+    if operation == "create_user":
+        return {
+            "status": "success",
+            "message": "create_user received",
+            "data": payload.get("data", {})
+        }
+
+    return {
+        "status": "error",
+        "message": f"Unknown operation: {operation}"    
+    }
+
+
 async def handle_client(websocket): # Handle incoming WebSocket connections
     print ("Client connected")
     try:
@@ -17,21 +33,7 @@ async def handle_client(websocket): # Handle incoming WebSocket connections
                 await websocket.send(json.dumps(error_response)) # Send an error response back to the client
                 continue # Skip to the next message if parsing fails
 
-            operation = payload.get("operation") # Get the "operation" field from the parsed JSON payload
-
-            if operation == "create_user": 
-                response = {
-                    "status": "success",
-                    "message": "create_user received",
-                    "data": payload.get("data", {})
-                }
-            
-            else:
-                response = {
-                    "status": "error",
-                    "message": f"Unknown operation: {operation}"
-                }
-                
+            response = build_response(payload) # Build a response based on the parsed payload 
             await websocket.send(json.dumps(response)) # Send the response back to the client
 
     except websockets.ConnectionClosed: # Handle client disconnection

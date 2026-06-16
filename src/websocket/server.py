@@ -1,7 +1,7 @@
 import json
 import websockets
 
-def build_response(payload):
+def build_response(payload): # Build a response based on the incoming payload
     operation = payload.get("operation")
 
     if operation == "create_user":

@@ -17,11 +17,22 @@ async def handle_client(websocket): # Handle incoming WebSocket connections
                 await websocket.send(json.dumps(error_response)) # Send an error response back to the client
                 continue # Skip to the next message if parsing fails
 
-            response = {
-                "status": "success",
-                "echo": "ok"          
-            }
-            await websocket.send(json.dumps(response)) # Send a JSON response back to the client ("await" allows other tasks to run while waiting for the send to complete)
+            operation = payload.get("operation") # Get the "operation" field from the parsed JSON payload
+
+            if operation == "create_user": 
+                response = {
+                    "status": "success",
+                    "message": "create_user received",
+                    "data": payload.get("data", {})
+                }
+            
+            else:
+                response = {
+                    "status": "error",
+                    "message": f"Unknown operation: {operation}"
+                }
+                
+            await websocket.send(json.dumps(response)) # Send the response back to the client
 
     except websockets.ConnectionClosed: # Handle client disconnection
         print("Client disconnected")

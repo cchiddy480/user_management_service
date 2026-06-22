@@ -1,22 +1,30 @@
 import json
 import websockets
+from service.user_service import create_user_service, delete_user_service, list_users_service
 
 def build_response(payload): # Build a response based on the incoming payload
     operation = payload.get("operation")
 
     if operation == "create_user":
-        return {
-            "status": "success",
-            "message": "create_user received",
-            "data": payload.get("data", {})
-        }
+        data = payload.get("data", {})
+        result = create_user_service(name=data.get("name"), email=data.get("email"))
+        return result 
+    
+    elif operation == "delete_user":
+        user_id = payload.get("data", {}).get("user_id")
+        result = delete_user_service(user_id)
+        return result
 
-    return {
+    elif operation == "list_users":
+        result = list_users_service()
+        return result
+    
+    else:
+        return {
         "status": "error",
         "message": f"Unknown operation: {operation}"    
     }
-
-
+    
 async def handle_client(websocket): # Handle incoming WebSocket connections
     print ("Client connected")
     try:

@@ -1,3 +1,5 @@
+from sqlalchemy import select
+
 from model.user import User
 from database.sqlite import Session
 
@@ -11,3 +13,23 @@ def create_user(name, email):
 
     return user.id # Return the ID of the newly created user
 
+def delete_user(user_id):
+    with Session() as session:
+
+        user = session.get(User, user_id)
+
+        if not user:
+            return {"error": f"User with id {user_id} not found."}
+
+        else:
+            session.delete(user) 
+            session.commit()
+            return {"message": f"User with id {user_id} deleted successfully."}
+            
+
+def list_users():
+    with Session() as session:
+
+        users = session.execute(select(User)).scalars().all()
+
+        return [user.name for user in users]

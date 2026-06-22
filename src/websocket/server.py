@@ -2,7 +2,10 @@ import json
 import websockets
 from service.user_service import create_user_service, delete_user_service, list_users_service
 
-def build_response(payload): # Build a response based on the incoming payload
+# This function builds a response based on the operation specified in the payload.
+# It checks the "operation" field in the payload and calls the corresponding service function 
+# to perform the requested action (create, delete, or list users).
+def build_response(payload): 
     operation = payload.get("operation")
 
     if operation == "create_user":
@@ -24,7 +27,7 @@ def build_response(payload): # Build a response based on the incoming payload
         "status": "error",
         "message": f"Unknown operation: {operation}"    
     }
-    
+
 async def handle_client(websocket): # Handle incoming WebSocket connections
     print ("Client connected")
     try:

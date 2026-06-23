@@ -9,7 +9,9 @@ def build_response(payload):
     operation = payload.get("operation")
 
     if operation == "create_user":
-        data = payload.get("data", {})
+        # Extract the "name" and "email" from the "data" field in the payload 
+        # and call the create_user_service function to create a new user.
+        data = payload.get("data", {}) 
         result = create_user_service(name=data.get("name"), email=data.get("email"))
         return result 
     

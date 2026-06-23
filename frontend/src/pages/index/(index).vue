@@ -14,7 +14,7 @@
 
     <q-card>
       <q-card-section>
-        <div class="text-h6">User</div>
+        <div class="text-h6">Users</div>
         <div> Status: No users loaded yet</div>
       </q-card-section>
      </q-card> 

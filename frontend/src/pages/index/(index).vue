@@ -35,13 +35,21 @@ const webSocketUrl = "ws://localhost:8765";
 
 function connect() {
   if (
-  socket.value &&
-  (socket.value.readyState === WebSocket.OPEN ||
-    socket.value.readyState === WebSocket.CONNECTING)
-) {
-  return;
-}
+    socket.value &&
+    (socket.value.readyState === WebSocket.OPEN ||
+      socket.value.readyState === WebSocket.CONNECTING)
+  ) {
+    return;
+  }
+
   connectionStatus.value = "Connecting";
+
+  const ws = new WebSocket(webSocketUrl);
+  socket.value = ws;
+
+  ws.onopen = () => {
+    connectionStatus.value = "Connected";
+  };
 }
 
 function disconnect() {

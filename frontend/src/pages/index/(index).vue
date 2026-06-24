@@ -53,6 +53,7 @@ function connect() {
 
   ws.onclose = () => {
     connectionStatus.value = "Disconnected";
+    socket.value = null;
   };
 
   ws.onerror = () => {
@@ -62,6 +63,10 @@ function connect() {
 
 function disconnect() {
   connectionStatus.value = "Disconnected";
+  if (socket.value) {
+    socket.value.close();
+    socket.value = null;
+  }
 }
 
 

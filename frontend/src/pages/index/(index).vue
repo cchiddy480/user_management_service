@@ -17,6 +17,10 @@
         <div class="text-h6">Users</div>
         <div> Status: No users loaded yet</div>
       </q-card-section>
+
+      <q-card-actions align="right">
+        <q-btn color="primary" label="Load Users" :loading="isLoadingUsers" @click="isLoadingUsers = true" />
+      </q-card-actions>
      </q-card> 
   </q-page>
 </template>
@@ -25,13 +29,25 @@
 import { ref } from "vue";
 
 const connectionStatus = ref("Disconnected");
+const isLoadingUsers = ref(false);
+const socket = ref<WebSocket | null>(null);
+const webSocketUrl = "ws://localhost:8765"; 
 
 function connect() {
-  connectionStatus.value = "Connected";
+  if (
+  socket.value &&
+  (socket.value.readyState === WebSocket.OPEN ||
+    socket.value.readyState === WebSocket.CONNECTING)
+) {
+  return;
+}
+  connectionStatus.value = "Connecting";
 }
 
 function disconnect() {
   connectionStatus.value = "Disconnected";
 }
+
+
 </script>
 

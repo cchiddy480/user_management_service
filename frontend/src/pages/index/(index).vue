@@ -19,7 +19,7 @@
       </q-card-section>
 
       <q-card-actions align="right">
-        <q-btn color="primary" label="Load Users" :loading="isLoadingUsers" @click="isLoadingUsers = true" />
+        <q-btn color="primary" label="Load Users" :loading="isLoadingUsers" @click="loadUsers" />
       </q-card-actions>
      </q-card> 
   </q-page>
@@ -69,6 +69,16 @@ function disconnect() {
   }
 }
 
+function loadUsers() {
+  if (!socket.value || socket.value.readyState !== WebSocket.OPEN) {
+    console.error("WebSocket is not connected.");
+    return;
+  }
 
+  const payload = {operation: "list_users"};
+  socket.value.send(JSON.stringify(payload));
+
+
+}
 </script>
 

@@ -50,6 +50,14 @@ function connect() {
   ws.onopen = () => {
     connectionStatus.value = "Connected";
   };
+
+  ws.onclose = () => {
+    connectionStatus.value = "Disconnected";
+  };
+
+  ws.onerror = () => {
+    connectionStatus.value = "Error";
+  };
 }
 
 function disconnect() {

@@ -15,7 +15,7 @@
     <q-card>
       <q-card-section>
         <div class="text-h6">Users</div>
-        <div> Status: No users loaded yet</div>
+        <div> Status: {{ usersMessage }}</div>
       </q-card-section>
 
       <q-card-actions align="right">
@@ -32,6 +32,8 @@ const connectionStatus = ref("Disconnected");
 const isLoadingUsers = ref(false);
 const socket = ref<WebSocket | null>(null);
 const webSocketUrl = "ws://localhost:8765"; 
+const users = ref<string[]>([]);
+const usersMessage = ref("No users loaded yet");
 
 function connect() {
   if (

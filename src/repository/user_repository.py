@@ -9,9 +9,10 @@ def create_user(name, email):
         user = User(name=name, email=email)
 
         session.add(user) # Add the new user to the session's transaction
+        session.flush() # Flush the session to generate the user ID before committing
+        user_id = user.id # Retrieve the ID of the newly created user
         session.commit() # Commit the transaction to save the new user to the database
-
-    return user.id # Return the ID of the newly created user
+        return user_id # Return the ID of the newly created user
 
 # This function deletes a user by their ID. It first checks if the user exists in the database. 
 # If the user is found, it deletes the user and commits the transaction. 

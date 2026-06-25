@@ -37,6 +37,12 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { websocketService } from "@/services/websocketService";
+import type {
+  WebSocketResponse,
+  ListUsersRequest,
+  CreateUserRequest,
+  DeleteUserRequest
+} from "@/models/messages";
 
 const connectionStatus = ref("Disconnected");
 const isLoadingUsers = ref(false);
@@ -46,6 +52,7 @@ const usersMessage = ref("No users loaded yet");
 const newUserName = ref("");
 const newUserEmail = ref("");
 const deleteUserId = ref("");
+
 
 // The connect function establishes a WebSocket connection to the server and 
 // sets up event handlers for connection events and incoming messages.
@@ -72,16 +79,22 @@ function connect() {
   };
 
   websocketService.onMessage((event) => {
-    const response = JSON.parse(event.data);
+    const response: WebSocketResponse = JSON.parse(event.data);
 
-    if (Array.isArray(response.users)) {
+    if ("users" in response && Array.isArray(response.users)) {
       users.value = response.users;
       usersMessage.value = users.value.length > 0 ? users.value.join(", ") : "No users found";
-    } else if (response.id) {
+    } 
+    
+    else if ("id" in response && response.id) {
       usersMessage.value = `User created with ID: ${response.id}`;
-    } else if (response.message) {
+    } 
+    
+    else if ("message" in response && response.message) {
       usersMessage.value = response.message;
-    } else {
+    } 
+    
+    else {
       usersMessage.value = "Unknown response format";
     }
   });
@@ -99,7 +112,7 @@ function loadUsers() {
     return;
   }
 
-  const payload = {operation: "list_users"};
+  const payload: ListUsersRequest = { operation: "list_users" };
   websocketService.send(payload);
 }
 
@@ -135,7 +148,7 @@ function createUser() {
     return;
   }
 
-  const payload = {
+  const payload: CreateUserRequest = {
     operation: "create_user",
     data: {
       name: newUserName.value,
@@ -165,7 +178,7 @@ function deleteUser() {
     return;
   }
 
-  const payload = {
+  const payload: DeleteUserRequest = { 
     operation: "delete_user",
     data: {
       user_id: id

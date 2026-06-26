@@ -86,11 +86,11 @@ function connect() {
       usersMessage.value = users.value.length > 0 ? users.value.join(", ") : "No users found";
     } 
     
-    else if ("id" in response && response.id) {
+    else if ("id" in response) {
       usersMessage.value = `User created with ID: ${response.id}`;
     } 
     
-    else if ("message" in response && response.message) {
+    else if ("message" in response) {
       usersMessage.value = response.message;
     } 
     
@@ -116,8 +116,8 @@ function loadUsers() {
   websocketService.send(payload);
 }
 
-// The validateCreateUser function checks if the new user name and email are valid, 
-// returning an array of error messages if any validation fails.
+// The validateCreateUser function checks the input fields for creating a new user 
+// and returns an array of error messages if any validation fails.
 function validateCreateUser(): string[] {
   const errors: string[] = [];
 

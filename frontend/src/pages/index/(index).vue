@@ -17,7 +17,7 @@
     <q-card>
       <q-card-section>
         <div class="text-h6">Users</div>
-        <div> Status: {{ usersMessage }}</div>
+        <div> Status: {{ userStore.usersMessage }}</div>
         <q-input v-model="newUserName" label="New User Name" />
         <q-input v-model="newUserEmail" label="New User Email" />
         <q-input v-model="deleteUserId" label="Delete User ID" />
@@ -48,8 +48,6 @@ import { useUserStore } from "@/stores/user-store";
 const userStore = useUserStore();
 const isLoadingUsers = ref(false);
 const webSocketUrl = "ws://localhost:8765"; 
-const users = ref<string[]>([]);
-const usersMessage = ref("No users loaded yet");
 const newUserName = ref("");
 const newUserEmail = ref("");
 const deleteUserId = ref("");
@@ -83,20 +81,20 @@ function connect() {
     const response: WebSocketResponse = JSON.parse(event.data);
 
     if ("users" in response && Array.isArray(response.users)) {
-      users.value = response.users;
-      usersMessage.value = users.value.length > 0 ? users.value.join(", ") : "No users found";
+      userStore.users = response.users;
+      userStore.usersMessage = userStore.users.length > 0 ? userStore.users.join(", ") : "No users found";
     } 
     
     else if ("id" in response) {
-      usersMessage.value = `User created with ID: ${response.id}`;
+      userStore.usersMessage = `User created with ID: ${response.id}`;
     } 
     
     else if ("message" in response) {
-      usersMessage.value = response.message;
+      userStore.usersMessage = response.message;
     } 
     
     else {
-      usersMessage.value = "Unknown response format";
+      userStore.usersMessage = "Unknown response format";
     }
   });
 }
@@ -139,13 +137,13 @@ function validateCreateUser(): string[] {
 // after validating the input fields. It also updates the usersMessage to reflect the operation status.
 function createUser() {
   if (websocketService.getReadyState() !== WebSocket.OPEN) {
-    usersMessage.value = "WebSocket is not connected.";
+    userStore.usersMessage = "WebSocket is not connected.";
     return; 
   }
 
   const errors = validateCreateUser();
   if (errors.length > 0) {
-    usersMessage.value = errors.join(" ");
+    userStore.usersMessage = errors.join(" ");
     return;
   }
 
@@ -157,25 +155,25 @@ function createUser() {
     }
   };
   websocketService.send(payload);
-  usersMessage.value = "Creating user...";
+  userStore.usersMessage = "Creating user...";
 }
 
 // The deleteUser function sends a request to the server to delete a user with the specified ID,
 // after validating the input field. It also updates the usersMessage to reflect the operation status.
 function deleteUser() {
   if (websocketService.getReadyState() !== WebSocket.OPEN) {
-    usersMessage.value = "WebSocket is not connected.";
+    userStore.usersMessage = "WebSocket is not connected.";
     return;
   }
 
   if (!deleteUserId.value.trim()) {
-    usersMessage.value = "Delete User ID is required.";
+    userStore.usersMessage = "Delete User ID is required.";
     return;
   }
 
   const id = Number(deleteUserId.value);
   if (!Number.isInteger(id) || id <= 0) {
-    usersMessage.value = "Delete User ID must be a positive whole number.";
+    userStore.usersMessage = "Delete User ID must be a positive whole number.";
     return;
   }
 
@@ -187,7 +185,7 @@ function deleteUser() {
   }
 
   websocketService.send(payload);
-  usersMessage.value = "Deleting user...";
+  userStore.usersMessage = "Deleting user...";
 }
 </script>
 

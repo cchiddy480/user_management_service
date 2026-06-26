@@ -3,6 +3,8 @@ import { defineStore, acceptHMRUpdate } from "pinia";
 export const useUserStore = defineStore("user", {
   state: () => ({
     connectionStatus: "Disconnected",
+    users: [] as string[],
+    usersMessage: "",
   }),
 
   getters: {

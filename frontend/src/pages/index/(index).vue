@@ -52,52 +52,11 @@ const webSocketUrl = "ws://localhost:8765";
 // The connect function establishes a WebSocket connection to the server and 
 // sets up event handlers for connection events and incoming messages.
 function connect() {
-  if (websocketService.getReadyState() === WebSocket.OPEN ||
-      websocketService.getReadyState() === WebSocket.CONNECTING) {
-    return;
-  }
-
-  userStore.connectionStatus = "Connecting";
-
-  const ws = websocketService.connect(webSocketUrl);
-
-  ws.onopen = () => {
-    userStore.connectionStatus = "Connected";
-  };
-
-  ws.onclose = () => {
-    userStore.connectionStatus = "Disconnected";
-  };
-
-  ws.onerror = () => {
-    userStore.connectionStatus = "Error";
-  };
-
-  websocketService.onMessage((event) => {
-    const response: WebSocketResponse = JSON.parse(event.data);
-
-    if ("users" in response && Array.isArray(response.users)) {
-      userStore.users = response.users;
-      userStore.usersMessage = userStore.users.length > 0 ? userStore.users.join(", ") : "No users found";
-    } 
-    
-    else if ("id" in response) {
-      userStore.usersMessage = `User created with ID: ${response.id}`;
-    } 
-    
-    else if ("message" in response) {
-      userStore.usersMessage = response.message;
-    } 
-    
-    else {
-      userStore.usersMessage = "Unknown response format";
-    }
-  });
+  userStore.connect(webSocketUrl);
 }
 
 function disconnect() {
-  websocketService.disconnect();
-  userStore.connectionStatus = "Disconnected";
+  userStore.disconnect();
 }
 
 // The loadUsers function sends a request to the server to retrieve the list of users.

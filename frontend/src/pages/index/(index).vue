@@ -5,7 +5,7 @@
     <q-card>
       <q-card-section>
         <div class="text-h6">Connection</div>
-        <div>Status: {{ connectionStatus }}</div>
+        <div>Status: {{ userStore.connectionStatus }}</div>
       </q-card-section>
 
       <q-card-actions align="right">
@@ -43,8 +43,9 @@ import type {
   CreateUserRequest,
   DeleteUserRequest
 } from "@/models/messages";
+import { useUserStore } from "@/stores/user-store";
 
-const connectionStatus = ref("Disconnected");
+const userStore = useUserStore();
 const isLoadingUsers = ref(false);
 const webSocketUrl = "ws://localhost:8765"; 
 const users = ref<string[]>([]);
@@ -62,20 +63,20 @@ function connect() {
     return;
   }
 
-  connectionStatus.value = "Connecting";
+  userStore.connectionStatus = "Connecting";
 
   const ws = websocketService.connect(webSocketUrl);
 
   ws.onopen = () => {
-    connectionStatus.value = "Connected";
+    userStore.connectionStatus = "Connected";
   };
 
   ws.onclose = () => {
-    connectionStatus.value = "Disconnected";
+    userStore.connectionStatus = "Disconnected";
   };
 
   ws.onerror = () => {
-    connectionStatus.value = "Error";
+    userStore.connectionStatus = "Error";
   };
 
   websocketService.onMessage((event) => {
@@ -102,7 +103,7 @@ function connect() {
 
 function disconnect() {
   websocketService.disconnect();
-  connectionStatus.value = "Disconnected";
+  userStore.connectionStatus = "Disconnected";
 }
 
 // The loadUsers function sends a request to the server to retrieve the list of users.

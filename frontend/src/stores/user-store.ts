@@ -5,6 +5,9 @@ export const useUserStore = defineStore("user", {
     connectionStatus: "Disconnected",
     users: [] as string[],
     usersMessage: "",
+    newUserName: "",
+    newUserEmail: "",
+    deleteUserId: ""
   }),
 
   getters: {

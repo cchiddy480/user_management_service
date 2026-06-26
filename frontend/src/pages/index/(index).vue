@@ -18,9 +18,9 @@
       <q-card-section>
         <div class="text-h6">Users</div>
         <div> Status: {{ userStore.usersMessage }}</div>
-        <q-input v-model="newUserName" label="New User Name" />
-        <q-input v-model="newUserEmail" label="New User Email" />
-        <q-input v-model="deleteUserId" label="Delete User ID" />
+        <q-input v-model="userStore.newUserName" label="New User Name" />
+        <q-input v-model="userStore.newUserEmail" label="New User Email" />
+        <q-input v-model="userStore.deleteUserId" label="Delete User ID" />
       </q-card-section>
 
       <q-card-actions align="right">
@@ -48,10 +48,6 @@ import { useUserStore } from "@/stores/user-store";
 const userStore = useUserStore();
 const isLoadingUsers = ref(false);
 const webSocketUrl = "ws://localhost:8765"; 
-const newUserName = ref("");
-const newUserEmail = ref("");
-const deleteUserId = ref("");
-
 
 // The connect function establishes a WebSocket connection to the server and 
 // sets up event handlers for connection events and incoming messages.
@@ -120,13 +116,13 @@ function loadUsers() {
 function validateCreateUser(): string[] {
   const errors: string[] = [];
 
-  if (!newUserName.value.trim()) {
+  if (!userStore.newUserName.trim()) {
     errors.push("Name is required.");
   }
 
-  if (!newUserEmail.value.trim()) {
+  if (!userStore.newUserEmail.trim()) {
     errors.push("Email is required.");
-  } else if (!newUserEmail.value.includes("@")) {
+  } else if (!userStore.newUserEmail.includes("@")) {
     errors.push("Email must contain @.");
   }
 
@@ -150,8 +146,8 @@ function createUser() {
   const payload: CreateUserRequest = {
     operation: "create_user",
     data: {
-      name: newUserName.value,
-      email: newUserEmail.value
+      name: userStore.newUserName,
+      email: userStore.newUserEmail
     }
   };
   websocketService.send(payload);
@@ -166,12 +162,12 @@ function deleteUser() {
     return;
   }
 
-  if (!deleteUserId.value.trim()) {
+  if (!userStore.deleteUserId.trim()) {
     userStore.usersMessage = "Delete User ID is required.";
     return;
   }
 
-  const id = Number(deleteUserId.value);
+  const id = Number(userStore.deleteUserId);
   if (!Number.isInteger(id) || id <= 0) {
     userStore.usersMessage = "Delete User ID must be a positive whole number.";
     return;

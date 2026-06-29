@@ -60,14 +60,7 @@ function disconnect() {
 }
 
 // The loadUsers function sends a request to the server to retrieve the list of users.
-function loadUsers() {
-  if (websocketService.getReadyState() !== WebSocket.OPEN) {
-    console.error("WebSocket is not connected.");
-    return;
-  }
-
-  const payload: ListUsersRequest = { operation: "list_users" };
-  websocketService.send(payload);
+function loadUsers() { userStore.loadUsers();
 }
 
 // The validateCreateUser function checks the input fields for creating a new user 

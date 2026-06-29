@@ -1,8 +1,12 @@
+// frontend/src/stores/user-store.ts
+// This file defines a Pinia store for managing user-related state and actions in the frontend application.
 import { defineStore, acceptHMRUpdate } from "pinia";
 import { websocketService } from "@/services/websocketService";
-import type { WebSocketResponse } from "@/models/messages";
+import type { WebSocketResponse, ListUsersRequest } from "@/models/messages";
 
+// The useUserStore function defines a Pinia store named "user" that manages the state and actions related to users.
 export const useUserStore = defineStore("user", {
+  // The state function returns the initial state of the store.
   state: () => ({
     connectionStatus: "Disconnected",
     users: [] as string[],
@@ -13,7 +17,8 @@ export const useUserStore = defineStore("user", {
   }),
 
   getters: {},
-
+  
+  // The actions object contains methods that can be called to perform operations related to users and WebSocket connections.
   actions: {
     setConnectionStatus(status: string) {
       this.connectionStatus = status;
@@ -56,6 +61,16 @@ export const useUserStore = defineStore("user", {
           this.usersMessage = "Unknown response format";
         }
       });
+    },
+
+    loadUsers() {
+      if (websocketService.getReadyState() !== WebSocket.OPEN) {
+        this.usersMessage = "WebSocket is not connected.";
+        return;
+      }
+
+      const payload: ListUsersRequest = { operation: "list_users" };
+      websocketService.send(payload);
     },
 
     disconnect() {

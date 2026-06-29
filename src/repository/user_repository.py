@@ -37,5 +37,5 @@ def list_users():
 
         users = session.execute(select(User)).scalars().all()
 
-        return [user.name for user in users]
+        return [f"{user.id}:{user.name}:{user.email}" for user in users]
 

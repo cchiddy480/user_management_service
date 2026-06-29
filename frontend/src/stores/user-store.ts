@@ -1,24 +1,20 @@
-// frontend/src/stores/user-store.ts
-// This file defines a Pinia store for managing user-related state and actions in the frontend application.
 import { defineStore, acceptHMRUpdate } from "pinia";
 import { websocketService } from "@/services/websocketService";
 import type { WebSocketResponse, ListUsersRequest } from "@/models/messages";
 
-// The useUserStore function defines a Pinia store named "user" that manages the state and actions related to users.
 export const useUserStore = defineStore("user", {
-  // The state function returns the initial state of the store.
   state: () => ({
     connectionStatus: "Disconnected",
     users: [] as string[],
     usersMessage: "",
     newUserName: "",
     newUserEmail: "",
-    deleteUserId: ""
+    deleteUserId: "",
+    selectedUser: null as { id: number; name: string; email: string } | null
   }),
 
   getters: {},
-  
-  // The actions object contains methods that can be called to perform operations related to users and WebSocket connections.
+
   actions: {
     setConnectionStatus(status: string) {
       this.connectionStatus = status;
@@ -61,6 +57,35 @@ export const useUserStore = defineStore("user", {
           this.usersMessage = "Unknown response format";
         }
       });
+    },
+
+    selectUserById(id: number) { 
+      if (this.users.length === 0) { 
+        this.selectedUser = null;
+        this.usersMessage = "No users loaded. Please load users first.";
+        return;
+      }
+
+      const found = this.users.find((user) => {
+        const [idPart] = user.split(":");
+        const userId = Number(idPart);
+        return userId === id;
+      });
+
+      if (!found) {
+        this.selectedUser = null;
+        this.usersMessage = `User with ID ${id} not found.`;
+        return;
+      }
+
+      const [idPart, namePart, emailPart] = found.split(":");
+      this.selectedUser = {
+        id: Number(idPart),
+        name: namePart?.trim() ?? "",
+        email: emailPart?.trim() ?? ""
+      };
+
+      this.usersMessage = `Loaded user ${id}.`;
     },
 
     loadUsers() {

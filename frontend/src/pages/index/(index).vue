@@ -1,53 +1,71 @@
 // This is the main page of the application, which allows users to connect to a WebSocket server and load a list of users. 
 // It displays the connection status and the list of users retrieved from the server.
 <template>
-  <q-page class="q-pa-md">
-    <q-card>
-      <q-card-section>
-        <div class="text-h6">Connection</div>
-        <div>Status: {{ userStore.connectionStatus }}</div>
-      </q-card-section>
+  <q-page class="q-pa-md bg-grey-1">
+    <div class="page-container column q-gutter-md">
+      <q-card flat bordered>
+        <q-card-section class="row items-center justify-between q-pb-sm">
+          <div>
+            <div class="text-h6">Connection</div>
+            <div class="text-caption text-grey-7">Manage websocket status</div>
+          </div>
+          <q-badge
+            rounded
+            :color="userStore.connectionStatus === 'Connected' ? 'positive' : userStore.connectionStatus === 'Connecting' ? 'warning' : userStore.connectionStatus === 'Error' ? 'negative' : 'grey-7'"
+            :label="userStore.connectionStatus"
+          />
+        </q-card-section>
 
-      <q-card-actions align="right">
-        <q-btn color="primary" label="Connect" @click="connect" />
-        <q-btn color="negative" flat label="Disconnect" @click="disconnect" />
-      </q-card-actions>
-    </q-card>
+        <q-card-actions align="right" class="q-gutter-sm q-pt-none">
+          <q-btn color="primary" label="Connect" @click="connect" />
+          <q-btn color="negative" flat label="Disconnect" @click="disconnect" />
+        </q-card-actions>
+      </q-card>
 
-    <q-card>
-      <q-card-section>
-        <div class="text-h6">Users</div>
-        <div> Status: {{ userStore.usersMessage }}</div>
-        <q-input v-model="userStore.newUserName" label="New User Name" />
-        <q-input v-model="userStore.newUserEmail" label="New User Email" />
-        <q-input v-model="userStore.deleteUserId" label="Delete User ID" />
-      </q-card-section>
+      <q-card flat bordered>
+        <q-card-section>
+          <div class="text-h6">Create User</div>
+          <div v-if="createStatus" class="text-caption text-grey-7 q-mb-sm">{{ createStatus }}</div>
+          <q-input v-model="userStore.newUserName" outlined dense label="New User Name" class="q-mb-sm" />
+          <q-input v-model="userStore.newUserEmail" outlined dense label="New User Email" class="q-mb-sm" />
+        </q-card-section>
 
-      <q-card-actions align="right">
-        <q-btn color="primary" label="Load Users" :loading="isLoadingUsers" @click="loadUsers" />
-        <q-btn color="secondary" label="Create User" @click="createUser" />
-        <q-btn color="negative" label="Delete User" @click="deleteUser" />
-      </q-card-actions>
-     </q-card> 
+        <q-card-actions align="right" class="q-gutter-sm">
+          <q-btn color="secondary" label="Create User" @click="createUser" />
+          <q-btn flat color="grey-8" label="User Details" to="/second" />
+        </q-card-actions>
+      </q-card>
+    </div>
   </q-page>
 </template>
 
 // The script section sets up the reactive state and functions for 
 // managing the WebSocket connection and user list.
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed } from "vue";
 import { websocketService } from "@/services/websocketService";
 import type {
-  WebSocketResponse,
-  ListUsersRequest,
-  CreateUserRequest,
-  DeleteUserRequest
+  CreateUserRequest
 } from "@/models/messages";
 import { useUserStore } from "@/stores/user-store";
 
 const userStore = useUserStore();
-const isLoadingUsers = ref(false);
 const webSocketUrl = "ws://localhost:8765"; 
+const createStatus = computed(() => {
+  const message = userStore.usersMessage;
+  const lower = message.toLowerCase();
+
+  if (
+    lower.includes("create") ||
+    lower.includes("name is required") ||
+    lower.includes("email is required") ||
+    lower.includes("email must contain")
+  ) {
+    return message;
+  }
+
+  return "";
+});
 
 // The connect function establishes a WebSocket connection to the server and 
 // sets up event handlers for connection events and incoming messages.
@@ -57,10 +75,6 @@ function connect() {
 
 function disconnect() {
   userStore.disconnect();
-}
-
-// The loadUsers function sends a request to the server to retrieve the list of users.
-function loadUsers() { userStore.loadUsers();
 }
 
 // The validateCreateUser function checks the input fields for creating a new user 
@@ -106,34 +120,12 @@ function createUser() {
   userStore.usersMessage = "Creating user...";
 }
 
-// The deleteUser function sends a request to the server to delete a user with the specified ID,
-// after validating the input field. It also updates the usersMessage to reflect the operation status.
-function deleteUser() {
-  if (websocketService.getReadyState() !== WebSocket.OPEN) {
-    userStore.usersMessage = "WebSocket is not connected.";
-    return;
-  }
-
-  if (!userStore.deleteUserId.trim()) {
-    userStore.usersMessage = "Delete User ID is required.";
-    return;
-  }
-
-  const id = Number(userStore.deleteUserId);
-  if (!Number.isInteger(id) || id <= 0) {
-    userStore.usersMessage = "Delete User ID must be a positive whole number.";
-    return;
-  }
-
-  const payload: DeleteUserRequest = { 
-    operation: "delete_user",
-    data: {
-      user_id: id
-    }
-  }
-
-  websocketService.send(payload);
-  userStore.usersMessage = "Deleting user...";
-}
 </script>
+
+<style scoped>
+.page-container {
+  max-width: 760px;
+  margin: 0 auto;
+}
+</style>
 

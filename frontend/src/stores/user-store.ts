@@ -1,6 +1,27 @@
 import { defineStore, acceptHMRUpdate } from "pinia";
 import { websocketService } from "@/services/websocketService";
-import type { WebSocketResponse, ListUsersRequest } from "@/models/messages";
+import type {
+  WebSocketResponse,
+  ListUsersRequest,
+  DeleteUserRequest
+} from "@/models/messages";
+
+type RawUserEntry = string | { id: number | string; name?: string; email?: string };
+
+function toUserString(entry: RawUserEntry): string | null {
+  if (typeof entry === "string") {
+    return entry;
+  }
+
+  const id = Number(entry.id);
+  if (!Number.isInteger(id) || id <= 0) {
+    return null;
+  }
+
+  const name = (entry.name ?? "").trim();
+  const email = (entry.email ?? "").trim();
+  return `${id}:${name}:${email}`;
+}
 
 export const useUserStore = defineStore("user", {
   state: () => ({
@@ -44,15 +65,33 @@ export const useUserStore = defineStore("user", {
       };
 
       websocketService.onMessage((event) => {
-        const response: WebSocketResponse = JSON.parse(event.data);
-      
-        if ("users" in response && Array.isArray(response.users)) {
-          this.users = response.users;
-          this.usersMessage = this.users.length > 0 ? this.users.join(", ") : "No users found.";
+        const response: WebSocketResponse | RawUserEntry[] = JSON.parse(event.data);
+
+        if (Array.isArray(response)) {
+          this.users = response
+            .map((entry) => toUserString(entry))
+            .filter((entry): entry is string => entry !== null);
+          this.usersMessage = this.users.length > 0
+            ? `${this.users.length} user${this.users.length === 1 ? "" : "s"} loaded.`
+            : "No users found.";
+        } else if ("users" in response && Array.isArray(response.users)) {
+          this.users = response.users
+            .map((entry) => toUserString(entry as RawUserEntry))
+            .filter((entry): entry is string => entry !== null);
+          this.usersMessage = this.users.length > 0
+            ? `${this.users.length} user${this.users.length === 1 ? "" : "s"} loaded.`
+            : "No users found.";
         } else if ("id" in response) {
           this.usersMessage = `User created with ID: ${response.id}`;
         } else if ("message" in response) {
           this.usersMessage = response.message;
+
+          if (response.message.toLowerCase().includes("deleted successfully")) {
+            this.selectedUser = null;
+            this.users = this.users.filter((user) => Number(user.split(":")[0]) !== Number(this.deleteUserId));
+            this.deleteUserId = "";
+          }
+
         } else {
           this.usersMessage = "Unknown response format";
         }
@@ -96,6 +135,30 @@ export const useUserStore = defineStore("user", {
 
       const payload: ListUsersRequest = { operation: "list_users" };
       websocketService.send(payload);
+    },
+
+    deleteUserById(id: number) {
+      if (websocketService.getReadyState() !== WebSocket.OPEN) {
+        this.usersMessage = "WebSocket is not connected.";
+        return;
+      }
+
+      if (!Number.isInteger(id) || id <= 0) {
+        this.usersMessage = "Delete User ID must be a positive whole number.";
+        return;
+      }
+
+      this.deleteUserId = String(id);
+
+      const payload: DeleteUserRequest = {
+        operation: "delete_user",
+        data: {
+          user_id: id
+        }
+      };
+
+      websocketService.send(payload);
+      this.usersMessage = "Deleting user...";
     },
 
     disconnect() {

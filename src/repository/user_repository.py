@@ -6,7 +6,7 @@ from database.sqlite import Session
 def create_user(name, email):
     with Session() as session: # Create a new session for interacting with the database
 
-        user = User(name=name, email=email)
+        user = User(name=name, email=email) # Create a new User object with the provided name and email
 
         session.add(user) # Add the new user to the session's transaction
         session.flush() # Flush the session to generate the user ID before committing

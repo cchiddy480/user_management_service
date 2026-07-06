@@ -88,6 +88,7 @@ function validateCreateUser(): string[] {
 
   if (!userStore.newUserEmail.trim()) {
     errors.push("Email is required.");
+    
   } else if (!userStore.newUserEmail.includes("@")) {
     errors.push("Email must contain @.");
   }

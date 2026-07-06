@@ -1,0 +1,17 @@
+# Ignore virtual environments, compiled Python files, and other unnecessary files
+
+.venv/
+__pycache__/
+*.pyc
+.env
+*.db
+*.sqlite
+*.sqlite3
+.DS_Store
+
+.git/
+tests/
+.pytest_cache/ 
+.coverage
+node_modules/
+
